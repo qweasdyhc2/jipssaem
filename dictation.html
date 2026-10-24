@@ -20,7 +20,7 @@
   <label>한 줄 칸 수<select name="cols" data-num><option value="10">10칸 (아주 크게)</option><option value="12" selected>12칸</option><option value="15">15칸</option><option value="18">18칸</option></select></label>
  </div>
  <div class="row"><label>받아쓰기 문장 (한 줄에 한 문장, 비워 두면 빈 시험지)<textarea name="text" rows="5" placeholder="예)&#10;하늘이 파랗습니다.&#10;동생과 놀이터에 갔어요."></textarea></label></div>
- <div class="row"><label class="chk"><input type="checkbox" name="mix" checked> 시험지는 문장 순서 섞기</label><label class="chk"><input type="checkbox" name="guide"> 칸 안 십자 보조선</label></div>
+ <div class="row"><label class="chk"><input type="checkbox" name="mix" checked> 시험지는 문장 순서 섞기</label><label class="chk"><input type="checkbox" name="guide"> 칸 안 십자 보조선</label><label class="chk"><input type="checkbox" name="half"> 종이 아끼기: 한 장에 2회분 (시험지, 10칸까지)</label></div>
  <div class="row"><label>만들 장 수<select name="sheets" data-num><option value="1">1장</option><option value="2">2장</option><option value="3">3장</option><option value="4">4장</option><option value="5">5장</option><option value="10">10장</option></select></label><label class="chk"><input type="checkbox" name="answer" checked> 정답지 함께 만들기</label><label class="chk"><input type="checkbox" name="who" checked> 이름·날짜 칸</label></div>
 </form>
 <script>
@@ -38,6 +38,15 @@ WS.init({
       return { title: '받아쓰기 연습', pages };
     }
     const n = sents.length ? Math.min(sents.length, 20) : o.n;
+    if (o.half) {
+      // 한 장을 좌우로 나눠 2회분: 가운데 점선으로 잘라 따로 씀
+      const H = Math.min(C, 10), hs = Math.min(79 / H, 200 / n - 3.5);
+      const sets = [1, 2].map(() => sents.length && o.mix ? WS.shuffle(sents) : sents);
+      const head = (k) => `<div class="dh"><b>${k}회</b>${o.who === false ? '' : `<span>이름 <u></u></span><span>날짜 <u class="s"></u>월 <u class="s"></u>일</span><span>맞은 개수 <u class="s"></u>/ ${n}</span>`}</div>`;
+      const col = (k) => `<div class="dcol">${head(k)}<div class="drows" style="gap:${Math.min(12, (215 - n * hs) / n).toFixed(1)}mm">${WS.range(1, n).map((i) => `<div class="dq"><span class="dn">${i}</span>${WS.cells([], H, hs, '', o.guide, '', '#7d9bb0')}</div>`).join('')}</div></div>`;
+      const ans = (k) => `<div class="dcol"><div class="dh"><b>${k}회</b></div><ol class="dans">${sets[k - 1].slice(0, 20).map((s) => `<li>${WS.esc(s)}</li>`).join('')}</ol></div>`;
+      return { title: '받아쓰기', page: `<div class="dhalf">${col(1)}${col(2)}</div>`, answer: sents.length ? `<div class="dhalf">${ans(1)}${ans(2)}</div>` : '', noWho: true };
+    }
     const order = sents.length && o.mix ? WS.shuffle(sents) : sents;
     const cell = Math.min(170 / C, 246 / n - 5.6);
     const items = WS.range(1, n).map((k) => `<div class="dq"><span class="dn">${k}</span>${WS.cells([], C, cell, '', o.guide, '', '#7d9bb0')}</div>`);
@@ -51,6 +60,15 @@ WS.init({
 .dn{flex:0 0 9mm;font-size:13pt;font-weight:700;text-align:right;padding-top:1mm}
 .dq .trow{margin-bottom:2.2mm}
 .dans{font:15pt/2.1 "Gowun Batang",serif;padding-left:10mm;color:#d22}
+.dhalf{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);height:100%}
+.dcol{display:flex;flex-direction:column;min-width:0;padding-right:4.5mm}
+.dcol+.dcol{border-left:.3mm dashed #999;padding:0 0 0 4.5mm;position:relative}
+.dcol+.dcol::before{content:"✂";position:absolute;left:-2.4mm;top:-4.5mm;font-size:10pt;line-height:1.2;color:#777;background:#fff}
+.dh{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 3mm;font-size:9.5pt;white-space:nowrap;border-bottom:.3mm solid #444;padding-bottom:1.5mm;margin-bottom:3mm}
+.dh b{font-size:12pt;margin-right:1mm}.dh u{display:inline-block;width:20mm;border-bottom:.3mm solid #444;text-decoration:none}.dh u.s{width:7mm}
+.drows{display:flex;flex-direction:column}
+.dhalf .dq{gap:1.5mm;margin:0}.dhalf .dn{flex-basis:6mm;font-size:11pt}.dhalf .dq .trow{margin:0}
+.dhalf .dans{font-size:12pt;padding-left:7mm}
 </style>
 <div class="bar"><button type="button" id="regen">🎲 새 문제 만들기</button><button type="button" id="print" class="ghost">🖨️ 인쇄 · PDF 저장</button><span id="pcount" class="note"></span></div><div id="sheets" class="sheets"></div><article class="guide">
 <h2>받아쓰기 시험지·연습지 활용법</h2>
@@ -61,6 +79,8 @@ WS.init({
 <li><b>둘째 날 - 틀리기 쉬운 곳 짚기</b>: 받침(ㄶ, ㄺ 등), 소리와 글자가 다른 낱말(같이→[가치]), 띄어쓰기를 함께 확인합니다.</li>
 <li><b>셋째 날 - 시험 보기</b>: '시험지'로 인쇄해 문장을 불러 줍니다. '문장 순서 섞기'를 켜면 외운 순서에 기대지 않고 실제 실력을 볼 수 있습니다. 정답지로 함께 채점하세요.</li>
 </ol>
+<h3>종이 아끼기: 한 장에 2회분</h3>
+<p>'종이 아끼기'를 켜면 A4 한 장이 왼쪽·오른쪽 두 칸으로 나뉘어 시험지 2회분이 들어갑니다. 가운데 점선을 따라 자르면 두 번 쓸 수 있어 셋째 날 시험과 다음 날 다시 보기에 알맞습니다. 문장을 넣었다면 1회와 2회의 문장 순서가 서로 다르게 섞이고, 정답지에도 회차별로 정리됩니다. 칸이 조금 작아지므로 한 줄은 10칸까지 만들어집니다.</p>
 <h3>불러 주는 요령</h3>
 <p>문장 전체를 한 번 자연스럽게 읽어 주고, 띄어 쓴 마디마다 천천히 한 번 더 읽어 줍니다. 받침을 일부러 또박또박 끊어 읽기보다 평소 말하듯 읽어야 실제 시험에 도움이 됩니다. 틀린 낱말은 연습지에 다시 넣어 다음 날 짧게 복습하면 됩니다.</p>
 <p class="note">이 사이트는 교과서·급수표 문장을 싣지 않습니다. 문장은 이용자가 직접 입력하며, 입력한 내용은 이용자의 브라우저 안에서만 처리됩니다.</p>
