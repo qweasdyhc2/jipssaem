@@ -160,7 +160,9 @@ const WS = (() => {
       document.getElementById('print').onclick = () => {
         byButton = true;
         const go = () => window.print();
-        if (document.fonts && document.fonts.ready) document.fonts.ready.then(go); else go();
+        // 글꼴과 그림이 다 불러와진 뒤 인쇄 (그림 학습지에서 빈칸이 나오지 않게)
+        const imgs = [...sheets.querySelectorAll('img')].filter((i) => !i.complete).map((i) => new Promise((ok) => { i.onload = i.onerror = ok; }));
+        Promise.all([document.fonts ? document.fonts.ready : null, ...imgs]).then(go);
         track('print_sheet', { in_app: inApp() ? 1 : 0 });
       };
       // 단축키·브라우저 메뉴로 인쇄한 경우는 따로 셈
