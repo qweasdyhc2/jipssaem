@@ -203,3 +203,30 @@ button.lite:active{box-shadow:0 1px 0 var(--line)}
   .page{zoom:1;box-shadow:none;margin:0;break-after:page;page-break-after:always}
   .page:last-child{break-after:auto;page-break-after:auto}
 }
+
+/* 상단 메뉴 두 줄, 내 학습지, 찜, 이달의 학습지, 고객센터 */
+.top .wrap.sub{min-height:0;padding-bottom:8px}
+.top .gnb{margin:0;padding:0 0 2px;flex:1;min-width:0}
+.gnb a.alt{background:rgba(255,255,255,.34)}
+.util{display:flex;gap:6px;margin-left:auto}
+.util a{font-family:var(--fun);font-size:15px;color:#fff;text-decoration:none;padding:4px 10px;white-space:nowrap}
+.util a:hover{text-decoration:underline}
+@media (max-width:640px){.top .wrap{flex-wrap:nowrap;padding-top:6px}.top .wrap.sub{padding-top:0;padding-bottom:6px}.top .gnb{margin:0 -16px;padding:2px 16px 2px;width:auto}.util{gap:0}.util a{font-size:14px;padding:4px 6px}}
+.fav{position:absolute;top:8px;right:8px;width:38px;height:38px;display:grid;place-items:center;padding:0;border:0;border-radius:50%;background:transparent;box-shadow:none;color:var(--line);font-size:22px;line-height:1;cursor:pointer}
+.fav:hover{background:var(--ks);box-shadow:none;transform:none}
+.fav.on{color:#f5b400}
+#fav.on{color:#b98700}
+#month{margin-top:0;padding:18px 20px 22px;border:3px solid var(--k);border-radius:26px;background:var(--ks)}
+#month h2{margin:0 0 2px}
+#month .sub{margin:0 0 14px;color:var(--sub)}
+#month .card{border-color:transparent}
+#mine .note{margin-top:10px}
+.notice{list-style:none;padding:0;margin:0}
+.notice li{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.notice time{flex:0 0 auto;color:var(--sub);font-size:14px;padding-top:2px}
+.cform{display:flex;flex-direction:column;gap:10px;max-width:620px}
+.cform textarea{min-height:130px}
+.cform .hp{position:absolute;left:-9999px}
+.cform button{align-self:flex-start}
+@media (max-width:480px){.notice li{flex-direction:column;gap:2px}}
+@media print{.fav{display:none}}
