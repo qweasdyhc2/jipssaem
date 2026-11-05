@@ -80,7 +80,46 @@ const WS = (() => {
     const who = o.who === false || extra.noWho ? '' :
       `<div class="who"><span>이름 <u></u></span><span>날짜 <u class="s"></u>월 <u class="s"></u>일</span>${extra.count ? `<span>맞은 개수 <u class="s"></u>/ ${extra.count}</span>` : ''}</div>`;
     return `<section class="page${extra.ans ? ' ans' : ''}"><div class="ph"><div class="pt">${extra.ans ? '<b class="tag">정답</b>' : ''}${esc(title).replace(/\s*\((.*)\)$/, ' <small>$1</small>')}</div>${extra.ans ? '' : who}</div>`
-      + `<div class="pb">${body}</div><div class="pf">${esc((document.querySelector('.logo') || {}).textContent || '')} · 무료 인쇄용 학습지</div></section>`;
+      + `<div class="pb">${body}</div><div class="pf">${o.site === false ? '&nbsp;' : `${esc((document.querySelector('.logo') || {}).textContent || '')} · <b>jipssaem.com</b> · 무료 인쇄용 학습지`}</div></section>`;
+  }
+
+  // 옵션을 주소에 담기 (글자 입력칸은 아이 이름·문장이 들어가므로 절대 넣지 않음)
+  function linkFromOpts() {
+    const p = new URLSearchParams(), multi = {};
+    form.querySelectorAll('[name]').forEach((el) => {
+      if (el.tagName === 'TEXTAREA' || el.type === 'text') return;
+      if (el.type === 'checkbox' && el.dataset.multi !== undefined) { multi[el.name] = multi[el.name] || []; if (el.checked) multi[el.name].push(el.value); }
+      else if (el.type === 'checkbox') p.set(el.name, el.checked ? '1' : '0');
+      else if (el.type === 'radio') { if (el.checked) p.set(el.name, el.value); }
+      else p.set(el.name, el.value);
+    });
+    Object.keys(multi).forEach((k) => p.set(k, multi[k].join(',')));
+    return location.origin + location.pathname + '?' + p.toString();
+  }
+  function optsFromLink() {
+    const p = new URLSearchParams(location.search);
+    if (![...p.keys()].length) return;
+    form.querySelectorAll('[name]').forEach((el) => {
+      if (el.tagName === 'TEXTAREA' || el.type === 'text' || !p.has(el.name)) return;
+      const v = p.get(el.name);
+      if (el.type === 'checkbox' && el.dataset.multi !== undefined) el.checked = v.split(',').includes(el.value);
+      else if (el.type === 'checkbox') el.checked = v === '1';
+      else if (el.type === 'radio') el.checked = el.value === v;
+      else if (el.tagName === 'SELECT') { if ([...el.options].some((x) => x.value === v)) el.value = v; }
+      else el.value = v;
+    });
+  }
+  const track = (name, extra = {}) => { if (window.gtag) gtag('event', name, { page: location.pathname, ...extra }); };
+  const inApp = () => /KAKAOTALK|NAVER\(|Instagram|FBAN|FBAV|Threads|Line\//i.test(navigator.userAgent);
+  function say(msg) { const c = document.getElementById('msg'); if (!c) return; c.textContent = msg; c.hidden = false; clearTimeout(say.t); say.t = setTimeout(() => { c.hidden = true; }, 5000); }
+  async function share() {
+    const url = linkFromOpts(), title = document.title;
+    if (navigator.share) {
+      try { await navigator.share({ title, url }); track('share_sheet', { method: 'native' }); return; }
+      catch (e) { if (e && e.name === 'AbortError') return; }
+    }
+    try { await navigator.clipboard.writeText(url); say('링크를 복사했어요! 카톡이나 메모에 붙여 넣으면 같은 설정으로 열려요.'); track('share_sheet', { method: 'copy' }); }
+    catch (e) { window.prompt('아래 링크를 복사하세요', url); track('share_sheet', { method: 'prompt' }); }
   }
 
   function render() {
@@ -89,7 +128,7 @@ const WS = (() => {
     const qs = [], as = [];
     for (let i = 0; i < n; i++) {
       const r = cfg.gen(o, i);
-      (r.pages || [r.page]).forEach((pg) => qs.push(page(r.title, pg, o, { count: r.count, noWho: r.noWho })));
+      (r.pages || [r.page]).forEach((pg, j) => qs.push(page((r.titles && r.titles[j]) || r.title, pg, o, { count: r.count, noWho: r.noWho })));
       if (o.answer !== false) (r.answers || (r.answer ? [r.answer] : [])).forEach((pg) => as.push(page(r.title, pg, o, { ans: true })));
     }
     sheets.innerHTML = qs.join('') + as.join('');
@@ -109,17 +148,28 @@ const WS = (() => {
       form = document.querySelector(c.form || '#opt');
       sheets = document.getElementById('sheets');
       load();
+      optsFromLink();
       if (c.setup) c.setup(form);
-      let t;
-      form.addEventListener('change', () => { if (c.onchange) c.onchange(form); render(); });
-      form.addEventListener('input', (e) => { if (e.target.tagName === 'TEXTAREA' || e.target.type === 'text') { clearTimeout(t); t = setTimeout(render, 400); } });
+      let t, changed = false, byButton = false;
+      const noteChange = () => { if (!changed) { changed = true; track('change_option'); } };
+      form.addEventListener('change', () => { noteChange(); if (c.onchange) c.onchange(form); render(); });
+      form.addEventListener('input', (e) => { if (e.target.tagName === 'TEXTAREA' || e.target.type === 'text') { noteChange(); clearTimeout(t); t = setTimeout(render, 400); } });
       form.addEventListener('submit', (e) => e.preventDefault());
-      document.getElementById('regen').onclick = render;
+      const rg = document.getElementById('regen');
+      if (rg) rg.onclick = () => { track('new_sheet'); render(); };
       document.getElementById('print').onclick = () => {
+        byButton = true;
         const go = () => window.print();
         if (document.fonts && document.fonts.ready) document.fonts.ready.then(go); else go();
-        if (window.gtag) gtag('event', 'print_sheet', { page: location.pathname });
+        track('print_sheet', { in_app: inApp() ? 1 : 0 });
       };
+      // 단축키·브라우저 메뉴로 인쇄한 경우는 따로 셈
+      window.addEventListener('beforeprint', () => { if (!byButton) track('print_browser'); });
+      window.addEventListener('afterprint', () => { byButton = false; });
+      const sh = document.getElementById('share');
+      if (sh) sh.onclick = share;
+      const ia = document.getElementById('inapp');
+      if (ia && inApp()) ia.hidden = false;
       window.addEventListener('resize', fit);
       if (c.onchange) c.onchange(form);
       render();
