@@ -181,7 +181,7 @@ button.lite:active{box-shadow:0 1px 0 var(--line)}
 .cell.x::after{top:50%;left:0;right:0;border-top-width:.25mm}
 .cell>span{position:relative;z-index:1}
 .tsvg{display:block}
-@media (max-width:600px){.bar button{flex:1 1 auto;padding:11px 10px}.bar .note{width:100%;margin:0}}
+@media (max-width:600px){.bar button{flex:1 1 auto;padding:11px 10px}.bar button.lite{padding:5px 10px;font-size:14px;box-shadow:none}.bar .note{width:100%;margin:0}}
 
 @media print{
   @page{size:A4;margin:0}
