@@ -9,6 +9,26 @@
   const mon = document.querySelector('.mon'), m = new Date().getMonth() + 1;
   if (mon && +mon.dataset.m !== m) { const t = document.querySelector(`template[data-m="${m}"]`); if (t) mon.replaceWith(t.content.cloneNode(true)); }
 
+  // 메인 '많이 뽑은 학습지' 순위 띠: 2.8초마다 한 줄씩 위로, 누르면 TOP 5 펼침 (움직임 줄이기 설정이면 멈춤)
+  const rank = document.getElementById('rank');
+  if (rank) {
+    const head = rank.querySelector('.rk-head'), all = rank.querySelector('.rk-all'), roll = rank.querySelector('.rk-roll');
+    const n = roll.children.length, still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let i = 0, timer = null;
+    if (n > 1) roll.append(roll.firstElementChild.cloneNode(true));
+    const step = () => {
+      i += 1; roll.style.transition = ''; roll.style.transform = `translateY(-${i * 1.4}em)`;
+      if (i === n) setTimeout(() => { roll.style.transition = 'none'; i = 0; roll.style.transform = 'translateY(0)'; }, 500);
+    };
+    const go = () => { if (!still && n > 1 && !timer) timer = setInterval(step, 2800); };
+    const stop = () => { clearInterval(timer); timer = null; };
+    go();
+    head.addEventListener('click', () => {
+      const open = all.hidden; all.hidden = !open; rank.classList.toggle('open', open); head.setAttribute('aria-expanded', open);
+      if (open) { stop(); track('open_ranking', {}); } else go();
+    });
+  }
+
   if (here) put(REC, [here, ...get(REC).filter((s) => s !== here)].slice(0, 12));
 
   const tpl = document.getElementById('catalog');
