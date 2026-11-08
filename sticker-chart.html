@@ -30,10 +30,12 @@
   <label>색<select name="ink"><option value="color">컬러</option><option value="mono">흑백</option></select></label>
   <label>한 장에<select name="per" data-num><option value="1">1개</option><option value="2">2개 (잘라 쓰기)</option></select></label>
  </div>
+ <div class="row"><label>칸 아래 이름<select name="list"><option value="">없음</option><option value="origami">종이접기 쉬운 것부터 10가지</option></select></label></div>
  <div class="row"><label class="chk"><input type="checkbox" name="num" checked> 칸에 번호 넣기</label></div>
  <div class="row"><label>만들 장 수<select name="sheets" data-num><option value="1">1장</option><option value="2">2장</option><option value="3">3장</option><option value="4">4장</option><option value="5">5장</option><option value="10">10장</option></select></label><label class="chk"><input type="checkbox" name="site" checked> 아래에 사이트 주소 표시</label></div>
 </form>
 <script>
+const LISTS = { origami: { t: '종이접기 도전판', goal: '하나 접으면 스티커 하나!', w: ['강아지 얼굴', '고양이 얼굴', '튤립', '컵', '종이비행기', '하트', '딱지', '투구', '종이배', '종이학'] } };
 const SK = ['#f06595', '#fcc419', '#51cf66', '#339af0', '#b197fc', '#ff922b'];
 function shapePath(k, cx, cy, r) {
   if (k === 'circle') return `<circle cx="${cx}" cy="${cy}" r="${r}"/>`;
@@ -46,20 +48,21 @@ function board(o, H) {
   const W = 184, n = o.n, top = o.per === 2 ? 30 : 42, bottom = 18, A = H - top - bottom;
   let best = { s: 0 };
   for (let c = 1; c <= 12; c++) { const r = Math.ceil(n / c), s = Math.min(W / c, A / r); if (s > best.s) best = { s, c, r }; }
-  const { s, c, r } = best, ox = (W - c * s) / 2, oy = (A - r * s) / 2, R = s * .4, pts = [];
+  const L = LISTS[o.list], { s, c, r } = best, ox = (W - c * s) / 2, oy = (A - r * s) / 2, R = s * (L ? .33 : .4), up = L ? s * .07 : 0, pts = [];
   for (let i = 0; i < n; i++) {
     const row = Math.floor(i / c); let col = i % c;
     if (o.lay === 'path' && row % 2) col = c - 1 - col;
-    pts.push([ox + col * s + s / 2, oy + row * s + s / 2]);
+    pts.push([ox + col * s + s / 2, oy + row * s + s / 2 - up]);
   }
   const color = (i) => (o.ink === 'color' ? SK[i % SK.length] : '#555');
   const line = o.lay === 'path' ? `<polyline points="${pts.map((p) => p.map((v) => v.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="#bbb" stroke-width=".7" stroke-dasharray="2 2"/>` : '';
   const cells = pts.map((p, i) => { const sh = shapePath(o.shape, +p[0].toFixed(2), +p[1].toFixed(2), +R.toFixed(2)); return `<g fill="#fff">${sh}</g><g fill="${o.ink === 'color' ? color(i) + '22' : '#fff'}" stroke="${color(i)}" stroke-width="${s > 30 ? .9 : .6}">${sh}</g>`
-    + (o.num ? `<text x="${p[0].toFixed(1)}" y="${(p[1] + Math.min(R * .28, 2.6)).toFixed(1)}" font-size="${Math.min(R * .62, 7.5).toFixed(1)}" text-anchor="middle" fill="#888">${i + 1}</text>` : ''); }).join('');
+    + (o.num ? `<text x="${p[0].toFixed(1)}" y="${(p[1] + Math.min(R * .28, 2.6)).toFixed(1)}" font-size="${Math.min(R * .62, 7.5).toFixed(1)}" text-anchor="middle" fill="#888">${i + 1}</text>` : '')
+    + (L && L.w[i] ? `<text x="${p[0].toFixed(1)}" y="${(p[1] + R * 1.08 + Math.min(s * .1, 4.4)).toFixed(1)}" font-size="${Math.min(s * .1, 4.4).toFixed(1)}" text-anchor="middle" fill="#444" font-weight="700">${L.w[i]}</text>` : ''); }).join('');
   const mm = Math.round(R * 2 * (o.shape === 'star' ? .75 : .95) / 5) * 5;
   const nm = o.name ? WS.esc(o.name) : '<u class="bl"></u>';
-  const goal = o.goal ? WS.esc(o.goal) : '<u class="bl w"></u>', prize = o.prize ? WS.esc(o.prize) : '<u class="bl w"></u>';
-  return `<div class="sb" style="height:${H}mm"><div class="st1 ${o.per === 2 ? 'sm' : ''}">${nm}<span>의 칭찬판</span></div><div class="sg">이렇게 하면 스티커 하나! <b>${goal}</b></div>`
+  const goal = o.goal ? WS.esc(o.goal) : L ? L.goal : '<u class="bl w"></u>', prize = o.prize ? WS.esc(o.prize) : '<u class="bl w"></u>';
+  return `<div class="sb" style="height:${H}mm"><div class="st1 ${o.per === 2 ? 'sm' : ''}">${nm}<span>의 ${L ? L.t : '칭찬판'}</span></div><div class="sg">${L && !o.goal ? `<b>${goal}</b>` : `이렇게 하면 스티커 하나! <b>${goal}</b>`}</div>`
     + `<svg viewBox="0 0 ${W} ${A}" style="height:${A}mm;width:${W}mm;display:block;flex:0 0 auto">${line}${cells}</svg>`
     + `<div class="sr"><span class="em">🎁</span> ${n}칸을 다 모으면 <b>${prize}</b><small>칸 크기 약 ${mm}mm</small></div></div>`;
 }
@@ -93,6 +96,8 @@ WS.init({
 </ul>
 <h3>배치와 스티커 크기</h3>
 <p>'바둑판'은 칸이 많을 때 깔끔하고, '구불구불 길'은 보드게임처럼 도착점을 향해 가는 재미가 있습니다. 도안 오른쪽 아래에 칸 크기가 적혀 있으니 가진 스티커가 들어갈지 확인해 보세요. 매일 기록하고 싶다면 <a href="/calendar.html">스티커 달력</a>도 좋습니다.</p>
+<h3>도전판으로 쓰기</h3>
+<p>'칸 아래 이름'에서 <b>종이접기 쉬운 것부터 10가지</b>를 고르면 강아지 얼굴부터 종이학까지 접는 횟수가 적은 순서대로 칸 아래에 이름이 적힙니다. 하나 접을 때마다 그 칸에 스티커를 붙이면 아이가 다음에 접을 것을 스스로 고를 수 있습니다. 10칸 이상을 고르면 남은 칸은 아이가 접고 싶은 것을 직접 적어 쓰면 됩니다.</p>
 </article><section class="faq"><h2>자주 묻는 질문</h2><details><summary>몇 칸으로 시작하면 좋을까요?</summary><p>처음에는 10칸처럼 며칠 안에 채울 수 있는 크기가 좋습니다. 익숙해지면 20칸, 30칸으로 늘려 보세요. 인쇄물 아래에 칸 크기가 적혀 있어 가진 스티커가 들어갈지 미리 확인할 수 있습니다.</p></details><details><summary>스티커가 없어도 쓸 수 있나요?</summary><p>네. 칸에 도장을 찍거나 색연필로 색칠해도 됩니다. 흑백 인쇄를 고르면 잉크도 아낄 수 있습니다.</p></details><details><summary>입력한 이름은 저장되나요?</summary><p>이름과 목표는 내 브라우저 안에서만 도안을 그리는 데 쓰입니다. 서버로 전송되지 않고, 링크 공유에도 담기지 않습니다.</p></details></section><section class="more"><h2>부모님 가이드</h2><div class="grid"><a class="card c3" href="/guide/school-ready-checklist.html" data-k="초등학교 입학 준비 체크리스트 일정, 생활 습관, 학습, 준비물을 한 번에"><i class="ic">🎒</i><span class="tx"><b>초등학교 입학 준비 체크리스트</b><span>일정, 생활 습관, 학습, 준비물을 한 번에</span></span></a></div></section><section class="more"><h2>다른 학습지</h2><div class="grid"><a class="card c4" href="/wongoji.html" data-slug="wongoji" data-k="원고지 양식 만들기 200·400자, 내 글 넣어 인쇄"><i class="ic">📝</i><span class="tx"><b>원고지 양식 만들기</b><span>200·400자, 내 글 넣어 인쇄</span></span></a><a class="card c4" href="/notebook.html" data-slug="notebook" data-k="공책 양식 만들기 영어노트·깍두기·모눈·줄노트"><i class="ic">📓</i><span class="tx"><b>공책 양식 만들기</b><span>영어노트·깍두기·모눈·줄노트</span></span></a><a class="card c4" href="/maze.html" data-slug="maze" data-k="미로찾기 도안 난이도·모양별 새 미로 + 정답"><i class="ic">🌀</i><span class="tx"><b>미로찾기 도안</b><span>난이도·모양별 새 미로 + 정답</span></span></a><a class="card c4" href="/picture-diary.html" data-slug="picture-diary" data-k="그림일기 양식 날짜, 날씨, 그림 칸, 8~15칸"><i class="ic">🖍️</i><span class="tx"><b>그림일기 양식</b><span>날짜, 날씨, 그림 칸, 8~15칸</span></span></a><a class="card c4" href="/hidden-pictures.html" data-slug="hidden-pictures" data-k="숨은그림찾기 도안 주제와 난이도를 골라 인쇄, 정답지 포함"><i class="ic">🔎</i><span class="tx"><b>숨은그림찾기 도안</b><span>주제와 난이도를 골라 인쇄, 정답지 포함</span></span></a><a class="card c4" href="/find-diff.html" data-slug="find-diff" data-k="틀린그림 · 같은그림 찾기 다른 곳 찾기, 같은 그림, 세기, 짝 잇기"><i class="ic">🔍</i><span class="tx"><b>틀린그림 · 같은그림 찾기</b><span>다른 곳 찾기, 같은 그림, 세기, 짝 잇기</span></span></a></div></section><p class="updated">업데이트: 2026-11-08</p></main><footer class="foot"><div class="wrap">
 <nav><a href="/guide/">부모님 가이드</a><a href="/about.html">소개</a><a href="/privacy.html">개인정보처리방침</a><a href="/terms.html">이용약관</a><a href="/contact.html">고객센터</a></nav>
 <p>© 2026 집쌤. 모든 학습지는 직접 만든 문제이며 가정과 학교에서 자유롭게 인쇄해 쓸 수 있습니다.</p>
