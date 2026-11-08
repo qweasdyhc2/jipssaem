@@ -17,10 +17,11 @@
 <div class="wrap sub"><nav class="gnb"><a href="/#c1">🔢 수학</a><a href="/#c3">✏️ 한글 국어</a><a href="/#c2">🔤 영어</a><a href="/#c5">🏮 한자</a><a href="/#c4">🧩 양식 놀이</a><a class="alt" href="/#ages">🐣 나이별</a><a class="alt" href="/#month">📅 이달의 학습지</a></nav></div></header>
 <main class="wrap c2"><div class="thead"><p class="crumb"><a href="/">홈</a> › <a href="/#c2">🔤 영어</a></p><h1 class="th"><i class="ic">🔤</i>영어 단어 쓰기 학습지</h1><p class="lead">외울 영어 단어와 뜻을 넣으면 4선 위 따라쓰기 연습지와, 뜻 보고 영어 쓰기·영어 보고 뜻 쓰기 단어 시험지가 정답지와 함께 A4로 만들어집니다.</p></div><script src="/ws.js?v=7946c5ab"></script><form id="opt" class="tool">
  <div class="row">
-  <label>만들 것<select name="mode"><option value="trace">4선 따라쓰기 연습지</option><option value="t1">시험: 뜻 보고 영어 쓰기</option><option value="t2">시험: 영어 보고 뜻 쓰기</option></select></label>
+  <label>만들 것<select name="mode"><option value="trace">4선 따라쓰기 연습지</option><option value="t1">시험: 뜻 보고 영어 쓰기</option><option value="t2">시험: 영어 보고 뜻 쓰기</option><option value="t3">빈 글자 채우기 (c _ t)</option></select></label>
+  <label>단어 고르기<select name="set"><option value="my">직접 입력</option><option value="sa">파닉스 a (cat, hat, map)</option><option value="se">파닉스 e (bed, pen, ten)</option><option value="si">파닉스 i (pig, pin, six)</option><option value="so">파닉스 o (dog, box, pot)</option><option value="su">파닉스 u (bug, sun, cup)</option><option value="w1">사이트워드 1 (the, and, is)</option><option value="w2">사이트워드 2 (said, have, they)</option><option value="an">동물</option><option value="co">색깔</option><option value="nu">숫자 1~12</option></select></label>
   <label id="st">따라쓰기 모양<select name="style"><option value="dot">점선 글씨</option><option value="gray">흐린 글씨</option></select></label>
  </div>
- <div class="row"><label>단어 목록 (한 줄에 '영어 뜻')<textarea name="text" rows="6">apple 사과
+ <div class="row" id="tx"><label>단어 목록 (한 줄에 '영어 뜻')<textarea name="text" rows="6">apple 사과
 banana 바나나
 cat 고양이
 dog 개
@@ -35,11 +36,31 @@ father 아버지</textarea></label></div>
  <div class="row"><label>만들 장 수<select name="sheets" data-num><option value="1">1장</option><option value="2">2장</option><option value="3">3장</option><option value="4">4장</option><option value="5">5장</option><option value="10">10장</option></select></label><label class="chk"><input type="checkbox" name="answer" checked> 정답지 함께 만들기</label><label class="chk"><input type="checkbox" name="who" checked> 이름, 날짜 칸</label><label class="chk"><input type="checkbox" name="site" checked> 아래에 사이트 주소 표시</label></div>
 </form>
 <script>
+// 단어 묶음: 파닉스(단모음 세 글자 단어), 사이트워드(자주 나오는 낱말), 주제 단어
+const SETS = {
+  sa: 'cat 고양이|hat 모자|bat 박쥐|rat 쥐|mat 매트|can 캔|fan 선풍기|man 남자|pan 프라이팬|van 승합차|map 지도|cap 야구 모자',
+  se: 'bed 침대|red 빨간색|pen 펜|hen 암탉|ten 열(10)|net 그물|jet 제트기|wet 젖은|leg 다리|egg 달걀|web 거미줄|vet 수의사',
+  si: 'pig 돼지|wig 가발|big 큰|dig 땅을 파다|pin 핀|fin 지느러미|six 여섯(6)|fix 고치다|lip 입술|zip 지퍼|kid 아이|sit 앉다',
+  so: 'dog 개|log 통나무|fog 안개|hot 뜨거운|pot 냄비|dot 점|box 상자|fox 여우|top 꼭대기|mop 대걸레|hop 깡충 뛰다|mom 엄마',
+  su: 'bug 벌레|mug 머그잔|rug 깔개|sun 해|run 달리다|bun 동그란 빵|cup 컵|pup 강아지|bus 버스|nut 견과|hut 오두막|tub 욕조',
+  w1: 'the 그|a 하나의|and 그리고|I 나|you 너|is ~이다|it 그것|in ~안에|to ~로|see 보다|can 할 수 있다|go 가다|my 나의|we 우리|up 위로|look 봐',
+  w2: 'he 그 남자|she 그 여자|are ~이다|was ~였다|said 말했다|for ~을 위해|on ~위에|at ~에서|with ~와 함께|this 이것|that 저것|have 가지다|like 좋아하다|they 그들|play 놀다|come 오다',
+  an: 'cat 고양이|dog 개|pig 돼지|cow 소|duck 오리|fish 물고기|bird 새|lion 사자|bear 곰|frog 개구리|rabbit 토끼|tiger 호랑이',
+  co: 'red 빨간색|blue 파란색|yellow 노란색|green 초록색|pink 분홍색|black 검은색|white 하얀색|orange 주황색|purple 보라색|brown 갈색',
+  nu: 'one 하나(1)|two 둘(2)|three 셋(3)|four 넷(4)|five 다섯(5)|six 여섯(6)|seven 일곱(7)|eight 여덟(8)|nine 아홉(9)|ten 열(10)|eleven 열하나(11)|twelve 열둘(12)',
+};
+// 빈 글자: 모음(a e i o u)을 비움. 모음이 없거나 다 모음이면 한 글자만 비움
+const holes = (w) => {
+  const ch = [...w], v = ch.map((c, i) => (/[aeiou]/i.test(c) ? i : -1)).filter((i) => i >= 0);
+  const ls = ch.map((c, i) => (/[a-z]/i.test(c) ? i : -1)).filter((i) => i >= 0);
+  return new Set(v.length && v.length < ls.length ? v : [WS.pick(ls)]);
+};
 const parseW = (l) => { const m = l.trim().match(/^(.+?)\s+([^a-zA-Z].*)$/); return m ? { e: m[1].trim(), k: m[2].trim() } : { e: l.trim(), k: '' }; };
 WS.init({
-  onchange(f) { f.querySelector('#st').hidden = f.mode.value !== 'trace'; },
+  onchange(f) { f.querySelector('#st').hidden = f.mode.value !== 'trace'; f.querySelector('#tx').hidden = f.set.value !== 'my'; },
   gen(o) {
-    const words = o.text.split('\n').map((l) => l.trim()).filter(Boolean).map(parseW);
+    const src = o.set !== 'my' && SETS[o.set] ? SETS[o.set].split('|') : o.text.split('\n');
+    const words = src.map((l) => l.trim()).filter(Boolean).map(parseW);
     if (o.mode === 'trace') {
       const W = 184, lw = 34, b = 4.5, gap = 5, unit = b * 3 + gap;
       const rows = words.map((w) => {
@@ -62,6 +83,11 @@ WS.init({
       return { title: '영어 단어 쓰기', pages };
     }
     const qs = WS.shuffle(words).slice(0, 30);
+    if (o.mode === 't3') {
+      const hs = qs.map((w) => holes(w.e));
+      const draw3 = (show) => WS.grid(qs.map((w, i) => `<div class="q ew"><span class="no">${i + 1}</span><span class="ewh">${[...w.e].map((c, j) => (c === ' ' ? '<i class="sp"></i>' : hs[i].has(j) ? `<b class="hole">${show ? `<span class="ansv">${WS.esc(c)}</span>` : ''}</b>` : `<b>${WS.esc(c)}</b>`)).join('')}</span><span class="ewk">${WS.esc(w.k)}</span></div>`), qs.length > 12 ? 2 : 1, 'qgrid', 'column');
+      return { title: '영어 단어 빈 글자 채우기', page: draw3(false), answer: draw3(true), count: qs.length };
+    }
     const t1 = o.mode === 't1';
     const draw = (show) => WS.grid(qs.map((w, i) => `<div class="q ew"><span class="no">${i + 1}</span><span class="ewq">${WS.esc(t1 ? w.k : w.e)}</span><span class="ewa">${show ? `<span class="ansv">${WS.esc(t1 ? w.e : w.k)}</span>` : ''}</span></div>`), qs.length > 15 ? 2 : 1, 'qgrid', 'column');
     return { title: t1 ? '영어 단어 시험 (영어 쓰기)' : '영어 단어 시험 (뜻 쓰기)', page: draw(false), answer: draw(true), count: qs.length };
@@ -73,6 +99,8 @@ WS.init({
 .ab .l{stroke:#8fb3dd;stroke-width:.25}.ab .m{stroke-dasharray:1.2 .8;stroke-width:.2}.ab .base{stroke:#e06060;stroke-width:.35}
 .ab .k{fill:#111}.ab .gray{fill:#c9c9c9}.ab .dot{fill:none;stroke:#888;stroke-width:.3;stroke-dasharray:.5 .5}
 .ab .kw{font-family:"Noto Sans KR",sans-serif;fill:#333}
+.ewh{flex:0 0 auto;display:flex;gap:1.2mm;align-items:flex-end;font-family:Andika,"Noto Sans KR",sans-serif;font-size:20pt}.ewh b{font-weight:400;min-width:6mm;text-align:center}.ewh .hole{width:8mm;height:10mm;border-bottom:.4mm solid #555;display:flex;align-items:flex-end;justify-content:center}.ewh .sp{width:3mm}.ewh .ansv{font-family:Andika,"Noto Sans KR",sans-serif;font-weight:400}
+.ewk{flex:1;margin-left:5mm;color:#555;font-size:12pt}
 .ew{font-size:14pt}.ewq{flex:0 0 40%;font-family:Andika,"Noto Sans KR",sans-serif}.ewa{flex:1;border-bottom:.3mm solid #555;height:9mm;display:flex;align-items:flex-end;font-family:Andika,"Noto Sans KR",sans-serif}
 </style>
 <div class="bar"><button type="button" id="regen">🎲 새 문제 만들기</button><button type="button" id="print" class="ghost">🖨️ 인쇄, PDF 저장</button><button type="button" id="fav" class="lite" aria-pressed="false">☆ 찜하기</button><button type="button" id="share" class="lite">🔗 링크 공유</button><span id="pcount" class="note"></span></div><p id="msg" class="tip" hidden></p><p id="inapp" class="tip" hidden>📱 앱 안에서 열린 화면은 인쇄가 안 될 수 있어요. 오른쪽 위 메뉴의 <b>다른 브라우저로 열기</b>를 누르거나, <b>링크 공유</b>로 PC에 보내 보세요.</p><div id="sheets" class="sheets"></div><article class="guide"><figure class="smp"><img src="/samples/english-words.png" alt="영어 단어 쓰기 학습지 A4 인쇄 예시" width="420" height="594" loading="lazy"><figcaption>영어 단어 쓰기 학습지 인쇄 예시</figcaption></figure>
@@ -84,6 +112,9 @@ WS.init({
 <li><b>수·목</b>: '영어 보고 뜻 쓰기' 시험으로 뜻을 확인합니다. 틀린 단어는 목록 맨 위로 옮겨 다시 따라 씁니다.</li>
 <li><b>금</b>: '뜻 보고 영어 쓰기' 시험으로 철자까지 확인합니다. 정답지로 스스로 채점하게 하세요.</li>
 </ol>
+<h3>단어 묶음으로 바로 시작하기</h3>
+<p>외울 단어 목록이 아직 없다면 '단어 고르기'에서 묶음을 골라 보세요. <b>파닉스 a, e, i, o, u</b>는 cat, bed, pig처럼 자음, 모음, 자음 세 글자로 된 짧은 단어를 모음별로 모았습니다. 끝소리가 같은 단어(cat, hat, bat)가 함께 들어 있어 첫소리만 바꿔 읽는 연습에 알맞습니다. <b>사이트워드</b>는 the, and, said처럼 그림책에 자주 나오지만 규칙대로 읽히지 않는 낱말입니다. 동물, 색깔, 숫자 묶음도 있습니다.</p>
+<p><b>빈 글자 채우기</b>는 c _ t처럼 모음 자리를 비워 두는 시험지입니다. 소리를 듣고 가운데 글자를 찾는 연습이라, 단어 전체 철자를 쓰기 전 단계로 쓰기 좋습니다. 사이트워드처럼 모음이 여러 개인 낱말은 한 글자만 비웁니다.</p>
 <h3>철자를 잘 외우는 요령</h3>
 <p>따라 쓸 때 글자 이름을 하나씩 말하게 하면(b-o-o-k) 철자가 손과 귀에 함께 남습니다. 비슷한 단어끼리(cat·hat·bat) 묶어 넣으면 파닉스 규칙도 함께 익힐 수 있습니다. 알파벳 모양이 아직 서툴다면 <a href="/alphabet.html">알파벳 쓰기 학습지</a>로 먼저 연습하세요.</p>
 <p class="note">기본으로 들어 있는 단어는 예시이며, 입력한 단어는 이용자의 브라우저 안에서만 처리됩니다. 글꼴: Andika (SIL 오픈 폰트 라이선스).</p>
