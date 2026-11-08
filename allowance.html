@@ -22,8 +22,9 @@
   <label>몇 월<select name="mon"><option value="">빈칸 (직접 쓰기)</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></label>
  </div>
  <div class="row">
+  <label>용돈 주는 때<select name="cycle"><option value="week">일주일마다</option><option value="month">한 달에 한 번</option></select></label>
   <label>아이 이름<input type="text" name="name" maxlength="10" placeholder="예) 하늘"></label>
-  <label>한 달 용돈 (원)<input type="text" name="pay" maxlength="8" inputmode="numeric" placeholder="예) 10000"></label>
+  <label>용돈 금액 (원)<input type="text" name="pay" maxlength="8" inputmode="numeric" placeholder="예) 10000"></label>
  </div>
  <div class="row">
   <label>모으고 싶은 것<input type="text" name="goal" maxlength="16" placeholder="예) 레고 자동차"></label>
@@ -60,7 +61,7 @@ function sheet(o) {
   const fs = Math.min(rowH * .5, 5.2).toFixed(2), hfs = Math.min(rowH * .42, 4).toFixed(2);
   // 위: 제목, 용돈, 목표
   let s = `<div class="al" style="--c:${c}"><div class="ah" style="height:${headH}mm">${nm}<span>의</span> ${mon}<span>월 용돈기입장</span></div>`;
-  s += `<div class="ai" style="height:${infoH}mm;margin-top:${gap}mm"><div class="ar"><span>한 달 용돈 ${pay ? `<b>${fmt(pay)}</b>` : '<u class="ab m"></u>'}원</span>`
+  s += `<div class="ai" style="height:${infoH}mm;margin-top:${gap}mm"><div class="ar"><span>${o.cycle === 'week' ? '일주일' : '한 달'} 용돈 ${pay ? `<b>${fmt(pay)}</b>` : '<u class="ab m"></u>'}원</span>`
     + `<span class="ag">모으고 싶은 것 ${o.goal ? `<b>${WS.esc(o.goal)}</b>` : '<u class="ab g"></u>'}</span><span>목표 ${goalAmt ? `<b>${fmt(goalAmt)}</b>` : '<u class="ab m"></u>'}원</span></div>`;
   if (o.coins) {
     s += '<div class="cr"><span class="cl">모은 만큼<br>색칠해요</span>';
@@ -74,7 +75,7 @@ function sheet(o) {
   if (o.carry) exRows.push({ t: '지난달 남은 돈', lab: 1 });
   if (o.ex) {
     const p = pay || 5000, buy = Math.min(1500, p);
-    exRows.push({ d: '1', t: '이번 달 용돈 받음', in: p, left: p, ex: 1 });
+    exRows.push({ d: '1', t: o.cycle === 'week' ? '이번 주 용돈 받음' : '이번 달 용돈 받음', in: p, left: p, ex: 1 });
     exRows.push({ d: '4', t: '색연필', out: buy, left: p - buy, w: 0, ex: 1 });
   }
   let t = `<table class="at" style="height:${tableH.toFixed(2)}mm;margin-top:${gap}mm"><colgroup>${widths.map((w) => `<col style="width:${w.toFixed(2)}mm">`).join('')}</colgroup>`;
@@ -134,7 +135,7 @@ WS.init({
 </style>
 <div class="bar"><button type="button" id="print" class="ghost">🖨️ 인쇄, PDF 저장</button><button type="button" id="fav" class="lite" aria-pressed="false">☆ 찜하기</button><button type="button" id="share" class="lite">🔗 링크 공유</button><span id="pcount" class="note"></span></div><p id="msg" class="tip" hidden></p><p id="inapp" class="tip" hidden>📱 앱 안에서 열린 화면은 인쇄가 안 될 수 있어요. 오른쪽 위 메뉴의 <b>다른 브라우저로 열기</b>를 누르거나, <b>링크 공유</b>로 PC에 보내 보세요.</p><div id="sheets" class="sheets"></div><article class="guide">
 <h2>용돈기입장 양식, 이렇게 시작해 보세요</h2>
-<p>용돈기입장은 아이가 받은 돈과 쓴 돈을 직접 적으며 돈의 흐름을 눈으로 보게 해 주는 공책입니다. 이 페이지에서는 <b>칸 구성, 줄 수, 아이 이름, 모으고 싶은 것</b>을 골라 우리 아이에게 맞는 양식을 한 달치씩 바로 인쇄할 수 있습니다.</p>
+<p>용돈기입장은 아이가 받은 돈과 쓴 돈을 직접 적으며 돈의 흐름을 눈으로 보게 해 주는 공책입니다. 이 페이지에서는 <b>칸 구성, 줄 수, 아이 이름, 모으고 싶은 것</b>을 골라 우리 아이에게 맞는 양식을 한 달치씩 바로 인쇄할 수 있습니다. 용돈을 일주일마다 주는 집은 '일주일마다'를 고르면 위 칸이 '일주일 용돈'으로 바뀌고, 한 장에 한 달 치를 적을 수 있습니다.</p>
 <h3>나이에 맞는 칸 고르기</h3>
 <ul>
 <li><b>7세, 초등 1학년</b>: '쉬운 칸'에 10줄. 날짜, 무엇을, 받은 돈, 쓴 돈만 적습니다. 숫자를 바르게 옮겨 쓰는 것만으로도 충분한 연습이 됩니다.</li>
