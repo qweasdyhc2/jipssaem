@@ -253,3 +253,6 @@ button.lite:active{box-shadow:0 1px 0 var(--line)}
 .rk-all p{margin:4px 0 2px;font-size:13px;color:var(--sub)}
 @media (max-width:420px){.rk-t{font-size:13px}.rank .rk-head{padding:8px 12px;gap:8px}}
 @media (prefers-color-scheme:dark){.rank .rk-head{border-color:var(--k4d)}.rk-all{border-color:var(--line)}}
+
+/* 검색 중: 순위 띠, 나이 버튼을 숨겨 결과가 검색창 바로 아래 오게(폰에서 키보드에 가려지던 문제) */
+.srch #month,.srch .hero #rank,.srch .hero #ages,.srch .hero .chips,.srch .hero>svg,.srch .hero .float{display:none}.srch .hero{padding-bottom:16px}
