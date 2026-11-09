@@ -193,7 +193,8 @@ button.lite:active{box-shadow:0 1px 0 var(--line)}
 .cell.x::after{top:50%;left:0;right:0;border-top-width:.25mm}
 .cell>span{position:relative;z-index:1}
 .tsvg{display:block}
-@media (max-width:600px){.bar button{flex:1 1 auto;padding:11px 10px}.bar button.lite{padding:5px 10px;font-size:14px;box-shadow:none}.bar .note{width:100%;margin:0}}
+/* 폰: 옵션은 두 개씩, 버튼 줄은 첫 화면 아래면 화면 바닥에 붙여 늘 보이게 */
+@media (max-width:600px){.tool .row>label{flex-basis:130px;min-width:0}.tool .row>label select{min-width:0;text-overflow:ellipsis}.bar{bottom:0;margin:0 -12px;padding:10px 12px 12px}.bar button{flex:1 1 auto;padding:11px 10px}.bar button.lite{padding:5px 10px;font-size:14px;box-shadow:none}.bar .note{width:100%;margin:0}}
 
 @media print{
   @page{size:A4;margin:0}
