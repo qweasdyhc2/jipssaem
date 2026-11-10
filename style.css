@@ -82,6 +82,7 @@ main.c1,main.c2,main.c3,main.c4,main.c5,main.c6{--acc:var(--k);--accd:var(--kd);
 .thead h1{display:flex;align-items:center;gap:12px;margin:8px 0 4px;color:#fff;font-size:clamp(25px,6vw,32px)}
 .thead .ic{background:#fff;color:var(--k);box-shadow:0 4px 0 rgba(0,0,0,.15)}
 .thead .lead{color:#fff;opacity:.95;margin:6px 0 0;font-size:15px}
+.perks{list-style:none;display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0;padding:0}.perks li{background:rgba(255,255,255,.22);color:#fff;border-radius:99px;padding:3px 10px;font-size:13px;font-weight:700;line-height:1.4}
 @media (max-width:640px){.thead .tl{display:none}}  /* 폰: 생성기 설명 숨겨 미리보기를 위로(11-08) */
 .crumb{font-size:13px;color:var(--sub);margin:16px 0 0}.crumb a{color:var(--sub)}
 .tool{background:var(--card);border:3px dashed var(--ks);border-radius:24px;padding:20px 18px 6px;margin:12px 0 8px;position:relative}
