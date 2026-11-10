@@ -22,7 +22,7 @@
   <label id="r1">짝<select name="pk"><option value="same">같은 그림끼리</option><option value="shadow">그림과 그림자</option></select></label>
  </div>
  <div class="row">
-  <label>주제<select name="theme"><option value="mix">섞어서</option><option value="fruit">과일·채소</option><option value="animal">동물</option><option value="sea">바다</option><option value="car">탈것</option><option value="snack">간식</option><option value="nature">꽃·자연</option></select></label>
+  <label>주제<select name="theme"><option value="mix">섞어서</option><option value="fruit">과일·채소</option><option value="animal">동물</option><option value="sea">바다</option><option value="car">탈것</option><option value="snack">간식</option><option value="nature">꽃·자연</option><option value="xmas">크리스마스</option></select></label>
   <label>그림 색<select name="ink"><option value="color">컬러</option><option value="mono">흑백 선 그림 (색칠용)</option></select></label>
  </div>
  <div class="row"><label>만들 장 수<select name="sheets" data-num><option value="1">1장</option><option value="2">2장</option><option value="3">3장</option><option value="4">4장</option><option value="5">5장</option><option value="10">10장</option></select></label><label class="chk"><input type="checkbox" name="answer" checked> 정답지 함께 만들기</label><label class="chk"><input type="checkbox" name="who" checked> 이름, 날짜 칸</label><label class="chk"><input type="checkbox" name="site" checked> 아래에 사이트 주소 표시</label></div>
@@ -81,12 +81,13 @@ const TH = {
   car: '🚗🚕🚙🚌🚓🚑🚒🚜🚲🛵🚂🚀🚁⛵🚤🛸',
   snack: '🍦🍩🍪🎂🍰🧁🍭🍬🍫🍿🍕🍔🍟🌭🥨🍙',
   nature: '🌞🌙⭐🌈🌸🌻🌷🍀🍁🌵🌲🌳🍂🌼🌺🌹',
+  xmas: '🎄🎅⛄🎁🔔🧦🦌🍪🧣🧤🌟⭐🍬🍭🛷🥛',
 };
 for (const k in TH) TH[k] = [...TH[k]];
 TH.mix = Object.values(TH).flat();
-const SIDE = new Set([...'🐟🐠🐡🐳🐬🦈🐢🦐🐋🐌🚗🚕🚙🚌🚓🚑🚒🚜🚲🛵🚂🚀🚁⛵🚤🍌🥕🍆🐔🐤🦞']);
+const SIDE = new Set([...'🦌🛷🧦🧤🐟🐠🐡🐳🐬🦈🐢🦐🐋🐌🚗🚕🚙🚌🚓🚑🚒🚜🚲🛵🚂🚀🚁⛵🚤🍌🥕🍆🐔🐤🦞']);
 // 그림자로 보면 헷갈리는 그림끼리는 한 장에 하나만
-const LOOK = ['🚗🚕🚙🚓', '🍎🍑🍅', '🐱🐯🦁', '🐻🐼🐨', '🌸🌼🌺🌷🌹🌻', '🌲🌳', '🍰🎂🧁', '🍬🍭', '🐟🐠🐡', '🐳🐋🐬🦈', '🦐🦞', '🍪🍩', '🐤🐔'].map((g) => [...g]);
+const LOOK = ['🚗🚕🚙🚓', '🍎🍑🍅', '🐱🐯🦁', '🐻🐼🐨', '🌸🌼🌺🌷🌹🌻', '🌲🌳', '🍰🎂🧁', '🍬🍭', '🐟🐠🐡', '🐳🐋🐬🦈', '🦐🦞', '🍪🍩', '🐤🐔', '🌟⭐', '🧣🧤'].map((g) => [...g]);
 const grp = (e) => LOOK.findIndex((g) => g.includes(e));
 const distinct = (P, n) => {
   const out = [], used = new Set();
@@ -207,6 +208,7 @@ WS.init({
 <li><b>6~7세</b>: 틀린그림 찾기 보통, 그림 세기 보통. 입학 전 '끝까지 앉아서 해 보기' 연습으로 알맞은 분량입니다.</li>
 <li><b>초등 저학년</b>: 어려움 단계를 시간을 재서 풀어 보고 기록을 깨 보세요.</li>
 </ul>
+<p>주제는 과일·채소, 동물, 바다, 탈것, 간식, 꽃·자연에 <b>크리스마스</b>(트리, 산타, 눈사람, 선물, 루돌프)까지 고를 수 있어 12월에는 크리스마스 틀린그림찾기 도안으로 쓰기 좋습니다.</p>
 <p>'흑백 선 그림'으로 뽑으면 흑백 프린터에서도 깔끔하고, 다 푼 뒤에는 색칠 공부로 한 번 더 쓸 수 있습니다. 미로를 좋아하는 아이라면 <a href="/maze.html">미로찾기</a>, 글자에 관심이 생겼다면 <a href="/jamo.html">자음모음 학습지</a>도 함께 해 보세요.</p>
 <p class="note">그림은 프로그램이 매번 새로 배치하며, 컬러는 기기에 들어 있는 이모지 글꼴, 흑백은 Google Fonts의 Noto Emoji(SIL 오픈 폰트 라이선스)로 나옵니다.</p>
 </article><section class="faq"><h2>자주 묻는 질문</h2><details><summary>몇 살부터 할 수 있나요?</summary><p>4~5세는 &#x27;짝 잇기&#x27;와 &#x27;같은 그림 찾기&#x27; 쉬움부터 시작하세요. 6~7세는 틀린그림찾기 쉬움·보통과 그림 세기가 알맞고, 초등 저학년은 어려움 단계로 집중력을 겨뤄 보세요.</p></details><details><summary>흑백 프린터로 뽑아도 되나요?</summary><p>네. &#x27;그림 색&#x27; 옵션에서 &#x27;흑백 선 그림&#x27;을 고르면 선으로 된 그림이 나와 흑백 프린터에서도 또렷하고, 다 푼 뒤 색칠 놀이로도 쓸 수 있습니다. 그림자 짝 잇기의 그림자는 항상 검은색입니다.</p></details><details><summary>틀린그림찾기는 어떤 도움이 되나요?</summary><p>두 그림을 번갈아 보며 차이를 찾는 동안 관찰력과 집중력, 작은 차이를 구별하는 시각 변별력이 자랍니다. 시각 변별력은 &#x27;ㅏ와 ㅓ&#x27;, &#x27;b와 d&#x27;처럼 비슷한 글자를 구별하는 힘과도 이어져 한글·영어를 배우기 전 준비 활동으로 좋습니다.</p></details></section><section class="more"><h2>다른 학습지</h2><div class="grid"><a class="card c4" href="/wongoji.html" data-slug="wongoji" data-k="원고지 양식 만들기 200·400자, 내 글 넣어 인쇄"><i class="ic">📝</i><span class="tx"><b>원고지 양식 만들기</b><span>200·400자, 내 글 넣어 인쇄</span></span></a><a class="card c4" href="/notebook.html" data-slug="notebook" data-k="공책 양식 만들기 영어노트·깍두기·모눈·줄노트"><i class="ic">📓</i><span class="tx"><b>공책 양식 만들기</b><span>영어노트·깍두기·모눈·줄노트</span></span></a><a class="card c4" href="/maze.html" data-slug="maze" data-k="미로찾기 도안 난이도·모양별 새 미로 + 정답"><i class="ic">🌀</i><span class="tx"><b>미로찾기 도안</b><span>난이도·모양별 새 미로 + 정답</span></span></a><a class="card c4" href="/picture-diary.html" data-slug="picture-diary" data-k="그림일기 양식 날짜, 날씨, 그림 칸, 8~15칸"><i class="ic">🖍️</i><span class="tx"><b>그림일기 양식</b><span>날짜, 날씨, 그림 칸, 8~15칸</span></span></a><a class="card c4" href="/hidden-pictures.html" data-slug="hidden-pictures" data-k="숨은그림찾기 도안 주제와 난이도를 골라 인쇄, 정답지 포함"><i class="ic">🔎</i><span class="tx"><b>숨은그림찾기 도안</b><span>주제와 난이도를 골라 인쇄, 정답지 포함</span></span></a><a class="card c4" href="/reading-log.html" data-slug="reading-log" data-k="독서록 양식 그림, 질문 세 개, 줄글, 읽은 책 목록"><i class="ic">📖</i><span class="tx"><b>독서록 양식</b><span>그림, 질문 세 개, 줄글, 읽은 책 목록</span></span></a></div></section><p class="updated">업데이트: 2026-11-10</p></main><footer class="foot"><div class="wrap">
