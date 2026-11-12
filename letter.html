@@ -74,9 +74,10 @@ function frame(o, t) {
   g += `<rect x="9.5" y="9.5" width="${W - 19}" height="${H - 19}" rx="3" fill="none" stroke="${t.b}" stroke-width=".35" stroke-dasharray="1.5 1.2"/>`;
   const seq = SEQ[o.deco], s = 5.2, pts = [];
   const nx = Math.round((W - 12) / 12), ny = Math.round((H - 12) / 12);
-  for (let i = 0; i <= nx; i++) { const x = 6 + (W - 12) * i / nx; pts.push([x, 6], [x, H - 6]); }
-  for (let j = 1; j < ny; j++) { const y = 6 + (H - 12) * j / ny; pts.push([6, y], [W - 6, y]); }
-  pts.forEach(([x, y], i) => { g += ico(seq[i % seq.length], x - s / 2, y - s / 2, s, t); });
+  // 무늬 순서는 둘레 위치(가로 i + 세로 j)로 정해 네 변 모두 섞이게
+  for (let i = 0; i <= nx; i++) { const x = 6 + (W - 12) * i / nx; pts.push([x, 6, i], [x, H - 6, i + ny]); }
+  for (let j = 1; j < ny; j++) { const y = 6 + (H - 12) * j / ny; pts.push([6, y, j], [W - 6, y, j + nx]); }
+  pts.forEach(([x, y, k]) => { g += ico(seq[k % seq.length], x - s / 2, y - s / 2, s, t); });
   return g;
 }
 const esc = (s) => WS.esc(s || '');
@@ -106,8 +107,8 @@ const ICON_SVG = (k, t, c = 'li') => `<svg viewBox="0 0 10 10" class="${c}">${IC
 // 북극 우체국 도장
 function stamp(t) {
   return `<svg viewBox="0 0 40 40" class="st"><g fill="none" stroke="${t.a}" stroke-width="1"><circle cx="20" cy="20" r="18"/><circle cx="20" cy="20" r="14.5" stroke-width=".5"/></g>`
-    + `<path id="arc" d="M7.5 20a12.5 12.5 0 0 1 25 0" fill="none"/><text font-size="4.6" fill="${t.a}" font-family="Jua"><textPath href="#arc" startOffset="50%" text-anchor="middle">북극 우체국</textPath></text>`
-    + `<g transform="translate(15 17.5) scale(1)">${ICON.star(t.a)}</g><text x="20" y="32" font-size="4.4" text-anchor="middle" fill="${t.a}" font-family="Jua">12. 24</text></svg>`;
+    + `<path id="arc" d="M9.6 21a10.4 10.4 0 0 1 20.8 0" fill="none"/><text font-size="3.9" fill="${t.a}" font-family="Jua"><textPath href="#arc" startOffset="50%" text-anchor="middle">북극 우체국</textPath></text>`
+    + `<g transform="translate(16.2 17.4) scale(.76)">${ICON.star(t.a)}</g><text x="20" y="30.6" font-size="4" text-anchor="middle" fill="${t.a}" font-family="Jua">12. 24</text></svg>`;
 }
 function replyPage(o, t) {
   const to = o.to ? `${esc(o.to)}에게` : '<u class="n"></u>에게';
