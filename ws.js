@@ -167,7 +167,7 @@ const WS = (() => {
       };
       // 단축키·브라우저 메뉴로 인쇄한 경우는 따로 셈
       window.addEventListener('beforeprint', () => { if (!byButton) track('print_browser'); });
-      window.addEventListener('afterprint', () => { byButton = false; });
+      window.addEventListener('afterprint', () => { if (byButton) bookmarkTip(); byButton = false; });
       const sh = document.getElementById('share');
       if (sh) sh.onclick = share;
       const ia = document.getElementById('inapp');
@@ -175,6 +175,20 @@ const WS = (() => {
       window.addEventListener('resize', fit);
       if (c.onchange) c.onchange(form);
       render();
+    };
+    // 단골 만들기(주인님 11-15): 인쇄 버튼으로 뽑은 뒤 즐겨찾기 안내, 한 브라우저에 14일에 한 번만
+    const bookmarkTip = () => {
+      const K = 'jip_bmtip', now = Date.now();
+      try { if (now - (+localStorage.getItem(K) || 0) < 14 * 864e5) return; localStorage.setItem(K, now); } catch (e) { return; }
+      const mob = /Android|iPhone|iPad/i.test(navigator.userAgent), mac = /Mac/i.test(navigator.platform);
+      const d = document.createElement('div');
+      d.className = 'bmtip';
+      d.innerHTML = '<b>⭐ 다음에도 바로 뽑으려면</b> ' + (mob ? '브라우저 메뉴에서 <b>홈 화면에 추가</b>를 눌러 두세요.'
+        : '<b>' + (mac ? '⌘+D' : 'Ctrl+D') + '</b>로 즐겨찾기 해 두세요.') + ' <button type="button" aria-label="닫기">✕</button>';
+      d.querySelector('button').onclick = () => d.remove();
+      document.body.appendChild(d);
+      setTimeout(() => d.remove(), 12000);
+      track('bookmark_tip', { mobile: mob ? 1 : 0 });
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   }

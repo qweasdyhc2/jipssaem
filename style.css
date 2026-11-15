@@ -257,3 +257,6 @@ button.lite:active{box-shadow:0 1px 0 var(--line)}
 
 /* 검색 중: 순위 띠, 나이 버튼을 숨겨 결과가 검색창 바로 아래 오게(폰에서 키보드에 가려지던 문제) */
 .srch #month,.srch .hero #rank,.srch .hero #ages,.srch .hero .chips,.srch .hero>svg,.srch .hero .float{display:none}.srch .hero{padding-bottom:16px}
+.bmtip{position:fixed;left:16px;right:16px;top:16px;margin:0 auto;width:fit-content;z-index:50;background:#fff8db;border:2px solid #fcc419;border-radius:12px;padding:10px 14px;font-size:15px;line-height:1.5;box-shadow:0 4px 14px rgba(0,0,0,.15);color:#333}
+.bmtip button{all:unset;margin-left:8px;padding:0 4px;font-size:16px;cursor:pointer;color:#868e96}
+@media print{.bmtip{display:none}}
