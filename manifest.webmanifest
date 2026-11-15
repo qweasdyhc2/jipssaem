@@ -1,0 +1,25 @@
+{
+ "name": "집쌤: 매번 새로 만드는 무료 인쇄용 학습지",
+ "short_name": "집쌤",
+ "description": "매번 새로 만드는 무료 인쇄용 학습지",
+ "lang": "ko",
+ "start_url": "/?utm_source=homescreen&utm_medium=pwa",
+ "scope": "/",
+ "display": "minimal-ui",
+ "background_color": "#fffdf6",
+ "theme_color": "#19c26b",
+ "icons": [
+  {
+   "src": "/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any maskable"
+  },
+  {
+   "src": "/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}

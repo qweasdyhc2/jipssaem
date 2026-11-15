@@ -177,18 +177,27 @@ const WS = (() => {
       render();
     };
     // 단골 만들기(주인님 11-15): 인쇄 버튼으로 뽑은 뒤 즐겨찾기 안내, 한 브라우저에 14일에 한 번만
+    // 안드로이드 크롬은 '앱 설치' 창을 직접 띄울 수 있어 미리 받아 둠(11-15 홈 화면에 추가)
+    let installEv = null;
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEv = e; });
+    window.addEventListener('appinstalled', () => track('pwa_install'));
     const bookmarkTip = () => {
+      if (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: minimal-ui)').matches) return;  // 이미 홈 화면 아이콘으로 들어옴
       const K = 'jip_bmtip', now = Date.now();
       try { if (now - (+localStorage.getItem(K) || 0) < 14 * 864e5) return; localStorage.setItem(K, now); } catch (e) { return; }
-      const mob = /Android|iPhone|iPad/i.test(navigator.userAgent), mac = /Mac/i.test(navigator.platform);
+      const ua = navigator.userAgent, ios = /iPhone|iPad/i.test(ua), mob = ios || /Android/i.test(ua), mac = /Mac/i.test(navigator.platform);
       const d = document.createElement('div');
       d.className = 'bmtip';
-      d.innerHTML = '<b>⭐ 다음에도 바로 뽑으려면</b> ' + (mob ? '브라우저 메뉴에서 <b>홈 화면에 추가</b>를 눌러 두세요.'
-        : '<b>' + (mac ? '⌘+D' : 'Ctrl+D') + '</b>로 즐겨찾기 해 두세요.') + ' <button type="button" aria-label="닫기">✕</button>';
-      d.querySelector('button').onclick = () => d.remove();
+      d.innerHTML = '<b>⭐ 다음에도 바로 뽑으려면</b> ' + (installEv ? '<button type="button" class="inst">📲 홈 화면에 추가</button>'
+        : ios ? '아래 <b>공유 버튼(⬆)</b> → <b>홈 화면에 추가</b>를 눌러 두세요.'
+        : mob ? '브라우저 메뉴(⋮)에서 <b>홈 화면에 추가</b>를 눌러 두세요.'
+        : '<b>' + (mac ? '⌘+D' : 'Ctrl+D') + '</b>로 즐겨찾기 해 두세요.') + ' <button type="button" class="x" aria-label="닫기">✕</button>';
+      d.querySelector('.x').onclick = () => d.remove();
+      const ib = d.querySelector('.inst');
+      if (ib) ib.onclick = () => { track('pwa_prompt'); installEv.prompt(); installEv = null; d.remove(); };
       document.body.appendChild(d);
-      setTimeout(() => d.remove(), 12000);
-      track('bookmark_tip', { mobile: mob ? 1 : 0 });
+      setTimeout(() => d.remove(), ib ? 20000 : 12000);
+      track('bookmark_tip', { mobile: mob ? 1 : 0, install: ib ? 1 : 0 });
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   }
