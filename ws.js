@@ -21,7 +21,7 @@ const WS = (() => {
 
   // 세로셈 한 문제 (ans가 null이면 빈칸)
   const vcalc = (a, op, b, ans) => `<div class="vcalc"><div>${a}</div><div><span class="op">${op}</span>${b}</div><div class="ln">${ans == null ? '' : `<span class="ansv">${ans}</span>`}</div></div>`;
-  // 문제 칸 배치: 열·행 수를 주면 쪽을 꽉 채우는 격자
+  // 문제 칸 배치: 열, 행 수를 주면 쪽을 꽉 채우는 격자
   const grid = (items, cols, cls = 'qgrid', flow = 'row') => `<div class="${cls}" style="height:100%;grid-template-columns:repeat(${cols},1fr);grid-template-rows:repeat(${Math.ceil(items.length / cols)},1fr);grid-auto-flow:${flow}">${items.join('')}</div>`;
 
   // 따라쓰기 칸 한 줄: chars 배열, size(mm), kind: 'b'(검정) 'g'(흐린 글씨) '' (빈칸) 또는 칸별 배열, guide: 십자 보조선
@@ -80,10 +80,10 @@ const WS = (() => {
     const who = o.who === false || extra.noWho ? '' :
       `<div class="who"><span>이름 <u></u></span><span>날짜 <u class="s"></u>월 <u class="s"></u>일</span>${extra.count ? `<span>맞은 개수 <u class="s"></u>/ ${extra.count}</span>` : ''}</div>`;
     return `<section class="page${extra.ans ? ' ans' : ''}"><div class="ph"><div class="pt">${extra.ans ? '<b class="tag">정답</b>' : ''}${esc(title).replace(/\s*\((.*)\)$/, ' <small>$1</small>')}</div>${extra.ans ? '' : who}</div>`
-      + `<div class="pb">${body}</div><div class="pf">${o.site === false ? '&nbsp;' : `${esc((document.querySelector('.logo') || {}).textContent || '')} · <b>jipssaem.com</b> · 무료 인쇄용 학습지`}</div></section>`;
+      + `<div class="pb">${body}</div><div class="pf">${o.site === false ? '&nbsp;' : `${esc((document.querySelector('.logo') || {}).textContent || '')} <b>jipssaem.com</b> 무료 인쇄용 학습지`}</div></section>`;
   }
 
-  // 옵션을 주소에 담기 (글자 입력칸은 아이 이름·문장이 들어가므로 절대 넣지 않음)
+  // 옵션을 주소에 담기 (글자 입력칸은 아이 이름, 문장이 들어가므로 절대 넣지 않음)
   function linkFromOpts() {
     const p = new URLSearchParams(), multi = {};
     form.querySelectorAll('[name]').forEach((el) => {
@@ -165,7 +165,7 @@ const WS = (() => {
         Promise.all([document.fonts ? document.fonts.ready : null, ...imgs]).then(go);
         track('print_sheet', { in_app: inApp() ? 1 : 0 });
       };
-      // 단축키·브라우저 메뉴로 인쇄한 경우는 따로 셈
+      // 단축키, 브라우저 메뉴로 인쇄한 경우는 따로 셈
       window.addEventListener('beforeprint', () => { if (!byButton) track('print_browser'); });
       window.addEventListener('afterprint', () => { if (byButton) bookmarkTip(); byButton = false; });
       const sh = document.getElementById('share');
