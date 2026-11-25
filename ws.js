@@ -142,6 +142,45 @@ const WS = (() => {
     sheets.style.setProperty('--z', Math.min(1, w / 794).toFixed(3));
   }
 
+  const loadJs = (src) => new Promise((ok, no) => { const e = document.createElement('script'); e.src = src; e.onload = ok; e.onerror = no; document.head.appendChild(e); });
+  async function savePdf(btn) {
+    if (btn.disabled) return;
+    const label = btn.textContent; btn.disabled = true; btn.textContent = '⏳ PDF 만드는 중';
+    const box = document.createElement('div');
+    try {
+      if (!window.html2canvas) await loadJs('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+      if (!window.jspdf) await loadJs('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+      if (document.fonts) await document.fonts.ready;
+      // 화면 미리보기는 폰 폭에 맞춰 줄어 있으니(zoom) 실제 A4 크기 복사본을 화면 밖에 두고 뜸
+      box.style.cssText = 'position:absolute;left:-12000px;top:0;width:210mm;--z:1;background:#fff;padding:0;border-radius:0';
+      box.className = 'sheets pdfbox';
+      document.body.appendChild(box);
+      const pages = [...sheets.querySelectorAll('.page')];
+      const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', compress: true });
+      for (let i = 0; i < pages.length; i++) {
+        btn.textContent = `⏳ PDF ${i + 1}/${pages.length}쪽`;
+        const cp = pages[i].cloneNode(true);
+        cp.querySelectorAll('textarea, input').forEach((e, k) => { const o = pages[i].querySelectorAll('textarea, input')[k]; if (o) e.value = o.value; });
+        cp.style.zoom = 1; cp.style.boxShadow = 'none';
+        box.replaceChildren(cp);
+        const cv = await window.html2canvas(cp, { scale: 2.5, backgroundColor: '#fff', useCORS: true, logging: false, windowWidth: 1200 });
+        if (i) doc.addPage();
+        doc.addImage(cv.toDataURL('image/jpeg', 0.9), 'JPEG', 0, 0, 210, 297);
+      }
+      const h1 = (document.querySelector('h1.th') || document.body).cloneNode(true); h1.querySelectorAll('.ic').forEach((e) => e.remove());
+      const name = h1.textContent.replace(/[^가-힣A-Za-z0-9 ]/g, '').trim().replace(/\s+/g, '_') || '학습지';
+      const d = new Date(), ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+      doc.save(`집쌤_${name}_${ymd}.pdf`);
+      track('pdf_download', { pages: pages.length, in_app: inApp() ? 1 : 0 });
+      say('PDF 파일을 내려받았어요. 인쇄할 때는 배율 100%(실제 크기)로 뽑으세요.');
+    } catch (e) {
+      track('pdf_fail', { err: String(e && e.message || e).slice(0, 80) });
+      say('PDF를 만들지 못했어요. 인쇄 버튼에서 대상을 \'PDF로 저장\'으로 골라 주세요.');
+    } finally {
+      box.remove(); btn.disabled = false; btn.textContent = label;
+    }
+  }
+
   function init(c) {
     cfg = c;
     const start = () => {
@@ -165,6 +204,9 @@ const WS = (() => {
         Promise.all([document.fonts ? document.fonts.ready : null, ...imgs]).then(go);
         track('print_sheet', { in_app: inApp() ? 1 : 0 });
       };
+      // PDF 파일로 바로 받기(11-25 문의 '인쇄만 뜨고 PDF 저장이 안 돼요'): 폰, 앱 안 브라우저도 되게 학습지를 그림으로 떠서 A4 PDF로
+      const pb = document.getElementById('pdf');
+      if (pb) pb.onclick = () => savePdf(pb);
       // 단축키, 브라우저 메뉴로 인쇄한 경우는 따로 셈
       window.addEventListener('beforeprint', () => { if (!byButton) track('print_browser'); });
       window.addEventListener('afterprint', () => { if (byButton) bookmarkTip(); byButton = false; });
